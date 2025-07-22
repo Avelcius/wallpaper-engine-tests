@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Проверка API</title>
+<style>
+  body { background: #111; color: #eee; font-family: monospace; padding: 20px; }
+  .ok { color: #0f0; }
+  .fail { color: #f00; }
+</style>
+</head>
+<body>
+
+<h2>Fetch API</h2>
+<div id="fetchResult">Загрузка...</div>
+
+<h2>WebSocket</h2>
+<div id="wsResult">Загрузка...</div>
+
+<script>
+  // Проверяем fetch
+  fetch('https://wallpaper-engine-tests.onrender.com/test')
+    .then(response => {
+      if (!response.ok) throw new Error('Ошибка HTTP ' + response.status);
+      return response.json();
+    })
+    .then(data => {
+      document.getElementById('fetchResult').textContent = data.message || 'Нет сообщения';
+      document.getElementById('fetchResult').className = 'ok';
+    })
+    .catch(() => {
+      document.getElementById('fetchResult').textContent = '❌ Fetch не работает (CORS или ошибка сети)';
+      document.getElementById('fetchResult').className = 'fail';
+    });
+
+  // Проверяем WebSocket
+  try {
+    const ws = new WebSocket('wss://wallpaper-engine-tests.onrender.com');
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      document.getElementById('wsResult').textContent = data.message || 'Нет сообщения';
+      document.getElementById('wsResult').className = 'ok';
+      ws.close();
+    };
+    ws.onerror = () => {
+      document.getElementById('wsResult').textContent = '❌ WebSocket не работает';
+      document.getElementById('wsResult').className = 'fail';
+    };
+  } catch {
+    document.getElementById('wsResult').textContent = '❌ Ошибка WebSocket подключения';
+    document.getElementById('wsResult').className = 'fail';
+  }
+</script>
+
+</body>
+</html>

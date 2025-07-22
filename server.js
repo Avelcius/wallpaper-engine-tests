@@ -3,8 +3,7 @@ import cors from 'cors';             // <--- обязательно импорт
 import { WebSocketServer } from 'ws';
 
 const app = express();
-const port = 3000;
-const wsPort = 3001;
+const port = process.env.PORT || 3000;
 
 // Разрешаем все источники, включая 'null' (например, sandboxed iframe, file://, нестандартные прокси)
 app.use(cors({
@@ -20,16 +19,17 @@ app.get('/test', (req, res) => {
     res.json({ message: "Hello Avelc! (fetch работает)" });
 });
 
-app.listen(port, () => {
-  console.log(`✅ HTTP: http://localhost:${port}/test`);
+const server = app.listen(port, () => {
+  console.log(`✅ HTTP+WS: http://localhost:${port}/test`);
 });
 
 // === WebSocket ===
-const wss = new WebSocketServer({ port: wsPort });
+const wss = new WebSocketServer({ server });
 
 wss.on('connection', (ws) => {
   console.log("🔌 WebSocket подключён");
   ws.send(JSON.stringify({ message: "Hello Avelc! (websocket работает)" }));
 });
 
-console.log(`✅ WS: ws://localhost:${wsPort}`);
+
+console.log(`✅ WS: ws://localhost:${port}`);
